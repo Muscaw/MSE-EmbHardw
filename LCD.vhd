@@ -37,7 +37,7 @@ ARCHITECTURE LCD_arch of LCD IS
 	 SIGNAL DataSig : std_logic_vector (15 DOWNTO 0) := "UUUUUUUUUUUUUUUU";
 	 CONSTANT IM0Sig : std_logic := '0';
 BEGIN
-    pStateMachine : PROCESS (Clk)
+    pStateMachine : PROCESS (Clk, nReset)
     BEGIN
         IF nReset = '0' THEN
             state <= s0;
