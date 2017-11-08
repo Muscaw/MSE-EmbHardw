@@ -8,6 +8,7 @@ incremental_db
 *.sopcinfo
 sopc_with_timer/
 sopc/
+*.qws
 .qsys_edit
 
 

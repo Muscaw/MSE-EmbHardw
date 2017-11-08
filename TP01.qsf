@@ -48,9 +48,9 @@ set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
 set_global_assignment -name NOMINAL_CORE_SUPPLY_VOLTAGE 1.2V
-set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
+set_global_assignment -name EDA_SIMULATION_TOOL "<None>"
 set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
-set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT NONE -section_id eda_simulation
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_location_assignment PIN_T1 -to 50MHzClk
@@ -254,12 +254,11 @@ set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name ENABLE_SIGNALTAP OFF
-set_global_assignment -name USE_SIGNALTAP_FILE output_files/analysis_leds.stp
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
-set_global_assignment -name VHDL_FILE LCDDMA.vhd
+set_global_assignment -name USE_SIGNALTAP_FILE output_files/test_dma.stp
+set_global_assignment -name VHDL_FILE DMA_LCD_ctrl.vhd
 set_global_assignment -name VHDL_FILE LCD.vhd
 set_global_assignment -name QSYS_FILE sopc.qsys
 set_global_assignment -name BDF_FILE TP01.bdf
 set_global_assignment -name VHDL_FILE GPIO.vhd
-set_global_assignment -name SIGNALTAP_FILE output_files/analysis_leds.stp
-set_global_assignment -name CDF_FILE output_files/Chain1.cdf
+set_global_assignment -name SIGNALTAP_FILE output_files/test_dma.stp
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
