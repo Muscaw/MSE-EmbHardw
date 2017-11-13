@@ -39,22 +39,18 @@ END DMA_LCD_CTRL;
 ARCHITECTURE LCD_arch of DMA_LCD_CTRL IS
     TYPE STATE_TYPE IS (Idle, IdleNW, s1, s2, s3, dS0, dS1, dS2, dS3, dS4);
     SIGNAL state : STATE_TYPE := Idle;
-	 SIGNAL WRXSig : std_logic := '1';
-	 SIGNAL DCXSig : std_logic := '0';
-	 CONSTANT RDXSig : std_logic := '1';
-	 SIGNAL FetchAddressSig : std_logic_vector (31 DOWNTO 0);
-	 SIGNAL Size : UNSIGNED(31 DOWNTO 0);
-	 SIGNAL DataSig : std_logic_vector (15 DOWNTO 0);
-	 SIGNAL FetchedDataSig : std_logic_vector (15 DOWNTO 0);
-	 SIGNAL MasterReadSignal : std_logic := '0';
-	 CONSTANT IM0Sig : std_logic := '0';
-	 CONSTANT CS_nSig : std_logic := '1';
-	 SIGNAL DMAMode : std_logic := '0';
-	 SIGNAL IsMasterWaitRequestUp : std_logic := '0';
-	 SIGNAL IsGoneThroughS3 : std_logic := '0';
-	 SIGNAL AddressSetup : std_logic := '0';
-	 SIGNAL SizeSetup : std_logic := '0';
-	 SIGNAL StartedSetup : std_logic := '0';
+	SIGNAL futurState : STATE_TYPE := Idle;
+	SIGNAL WRXSig : std_logic := '1';
+	SIGNAL DCXSig : std_logic := '0';
+	CONSTANT RDXSig : std_logic := '1';
+	SIGNAL FetchAddressSig : std_logic_vector (31 DOWNTO 0);
+	SIGNAL Size : std_logic_vector(31 DOWNTO 0);
+	SIGNAL DataSig : std_logic_vector (15 DOWNTO 0);
+	SIGNAL FetchedDataSig : std_logic_vector (15 DOWNTO 0);
+	SIGNAL MasterReadSignal : std_logic := '0';
+	CONSTANT IM0Sig : std_logic := '0';
+	CONSTANT CS_nSig : std_logic := '1';
+	SIGNAL DMAMode : std_logic := '0';
 	 --CONSTANT MasterByteenable : std_logic_vector(3 DOWNTO 0) := "0011";
 BEGIN
     pStateMachine : PROCESS (Clk, reset)
@@ -67,42 +63,37 @@ BEGIN
 			MasterReadSignal <= '0';
 			FetchAddressSig <= "00000000000000000000000000000000";
 			Size <= "00000000000000000000000000000000";
-			IsMasterWaitRequestUp <= '0';
-			IsGoneThroughS3 <= '0';
-			AddressSetup <= '0';
-			SizeSetup <= '0';
-			StartedSetup <= '0';
+			futurState <= Idle;
             -- Execute reset routine
         ELSIF rising_edge(Clk) THEN
             CASE state IS
                 WHEN Idle => 
-					end_of_transaction_irq <= '0';
                     IF avalon_wr = '1' AND avalon_cs = '1' THEN
 						CASE avalon_address IS
 							WHEN "000" => -- Write command to LCD
 								DCXSig <= '0';
-								state <= s1;
+								futurState <= s1;
 								DataSig <= avalon_write_data(15 DOWNTO 0);
 								WRXSig <= '0';
 							WHEN "001" => -- Write data to LCD
 								DCXSig <= '1';
-								state <= s1;
+								futurState <= s1;
 								DataSig <= avalon_write_data(15 DOWNTO 0);
 								WRXSig <= '0';
 							WHEN "010" => -- Setup source address
 								FetchAddressSig <= avalon_write_data;
 								AddressSetup <= '1';
-								state <= IdleNW;
+								futurState <= IdleNW;
 							WHEN "011" => -- Setup size of transfer
-								Size <= unsigned(avalon_write_data);
+								Size <= avalon_write_data;
 								SizeSetup <= '1';
-								state <= IdleNW;
+								futurState <= IdleNW;
 							WHEN "100" => -- Start DMA transfer
-								Size <= Size - 2;
+								Size <= std_logic_vector(unsigned(Size) - 2);
 								master_address <= FetchAddressSig;
 								MasterReadSignal <= '1';
 								StartedSetup <= '1';
-								state <= dS0;
+								futurState <= dS0;
 							WHEN others => NULL;
 						END CASE;
 					ELSIF avalon_rd = '1' AND avalon_cs = '1' THEN
@@ -115,55 +106,51 @@ BEGIN
 						END CASE;
                     END IF;
 				WHEN IdleNW =>
-					state <= Idle;
+					futurState <= Idle;
                 WHEN s1 =>
-                    state <= s2;
+                    futurState <= s2;
 					WRXSig <= '0';
                 WHEN s2 =>
-                    state <= s3;
+                    futurState <= s3;
                     WRXSig <= '1';
                 WHEN s3 =>
-                    state <= Idle;
+                    futurState <= Idle;
 					WRXSig <= '1';
 					IF DMAMode = '1' THEN
-					IsGoneThroughS3 <= '1';
 						DMAMode <= '0';
 						end_of_transaction_irq <= '1';
 					END IF;
 				WHEN dS0 =>
-					state <= dS1;
+					futurState <= dS1;
 					MasterReadSignal <= '1';
 					DMAMode <= '1';
-					IsGoneThroughS3 <= '0';
 				WHEN dS1 =>
 					DataSig <= master_readdata;
 					MasterReadSignal <= '0';
 					IF master_waitrequest = '0' THEN
-						state <= dS2;
-						LEDS(7) <= '0';
-					ELSE
-						LEDS(7) <= '1';
+						futurState <= dS2;
+
 					END IF;
 				WHEN dS2 =>
 					WRXSig <= '0';
 					DCXSig <= '1';
 					--DataSig <= FetchedDataSig;
-					state <= dS3;
+					futurState <= dS3;
 				WHEN dS3 =>
 					WRXSig <= '0';
 					DCXSig <= '1';
 					--DataSig <= FetchedDataSig;
 					FetchAddressSig <= std_logic_vector(unsigned(FetchAddressSig) + 2);
-					state <= dS4;
+					futurState <= dS4;
 				WHEN dS4 =>
 					WRXSig <= '1';
 					DCXSig <= '1';
 					--DataSig <= FetchedDataSig;
-					IF Size = 0 THEN
-						state <= s3;
+					IF unsigned(Size) = 0 THEN
+						futurState <= s3;
 					ELSE
-						Size <= Size - 2;
-						state <= dS0;
+						Size <= std_logic_vector(unsigned(Size) - 2);
+						futurState <= dS0;
 						master_address <= FetchAddressSig;
 					END IF;
             END CASE;
@@ -174,20 +161,20 @@ BEGIN
         END IF;
 		  
     END PROCESS pStateMachine;
+
+
+	pSlave : PROCESS (avalon_cs, avalon_wr, avalon_address, )
+
+
+	pStateAdvancement : PROCESS (futurState)
+	BEGIN
+		state <= futurState;
+	END PROCESS pStateAdvancement;
 	
 
     WaitRequestSlave <= '0' WHEN state = s3 OR state = IdleNW
         ELSE '1';
 	 
-	 -- LEDS <= FetchAddressSig;
-	 LEDS(0) <= master_waitrequest;
-	 LEDS(1) <= IsMasterWaitRequestUp;
-	 LEDS(2) <= '0' WHEN state = s3 OR state = IdleNW
-        ELSE '1';
-	LEDS(3) <= IsGoneThroughS3;
-	LEDS(4) <= AddressSetup;
-	LEDS(5) <= SizeSetup;
-	LEDS(6) <= StartedSetup;
 	LCD_data <= DataSig;
 	LCD_WR_n <= WRXSig;
 	RDX <= RDXSig;

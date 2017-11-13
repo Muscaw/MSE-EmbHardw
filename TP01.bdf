@@ -345,7 +345,7 @@ agreement for further details.
 	(output)
 	(rect 8 360 192 376)
 	(text "OUTPUT" (rect 134 0 183 10)(font "Arial" (font_size 6)))
-	(text "LEDS[31..0]" (rect 5 0 96 11)(font "Arial" ))
+	(text "LEDS[31..0]" (rect 5 0 95 11)(font "Arial" ))
 	(pt 184 8)
 	(drawing
 		(line (pt 184 8)(pt 132 8))
@@ -639,14 +639,6 @@ agreement for further details.
 	(pt 208 200)
 )
 (connector
-	(pt 648 192)
-	(pt 776 192)
-)
-(connector
-	(pt 776 192)
-	(pt 808 192)
-)
-(connector
 	(pt 296 448)
 	(pt 296 440)
 	(bus)
@@ -734,6 +726,14 @@ agreement for further details.
 	(pt 192 368)
 	(pt 296 368)
 	(bus)
+)
+(connector
+	(pt 648 192)
+	(pt 776 192)
+)
+(connector
+	(pt 776 192)
+	(pt 808 192)
 )
 (junction (pt 280 232))
 (junction (pt 208 232))

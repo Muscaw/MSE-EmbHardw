@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>Nov 8, 2017 12:02:50 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1510138970847</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>Nov 13, 2017 2:57:34 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1510581454546</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>/home/user/workspace/MSE-EmbHardw/software/test_dma_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>../../sopc.sopcinfo</SopcDesignFile>
