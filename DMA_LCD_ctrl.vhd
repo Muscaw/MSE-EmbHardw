@@ -106,6 +106,7 @@ BEGIN
 							WHEN "101" => -- DMA controller
 								IF avalon_write_data(0) = '1' THEN
 									end_of_transaction_irq <= '0';
+									state <= IdleNW;
 								END IF;
 							WHEN others => NULL;
 						END CASE;

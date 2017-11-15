@@ -23,10 +23,10 @@ void init_LCD() {
 	//IOWR_32DIRECT(GPIO_0_BASE, GPIO_WRITE_OFFSET ,0x00000003); // set reset on and 16 bits mode
 	//IOWR_32DIRECT(GPIO_0_BASE, GPIO_CLEAR_OFFSET, 0x40000003);
 	int counter = 0;
-	while (counter<500){counter++;}   // include delay of at least 120 ms use your timer or a loop
+	while (counter<5000){counter++;}   // include delay of at least 120 ms use your timer or a loop
 	IOWR_32DIRECT(GPIO_0_BASE, GPIO_WRITE_OFFSET ,0x00000002); // set reset on and 16 bits mode
 	counter = 0;
-	while (counter<500){counter++;}   // include delay of at least 120 ms use your timer or a loop
+	while (counter<5000){counter++;}   // include delay of at least 120 ms use your timer or a loop
 	IOWR_32DIRECT(GPIO_0_BASE, GPIO_CLEAR_OFFSET, 0x00000000); // set reset off and 16 bits mode and enable LED_CS
 	//IOWR_32DIRECT(GPIO_0_BASE, GPIO_CLEAR_OFFSET, 0x40000000);
 	counter = 0;
@@ -183,17 +183,25 @@ int main()
 
 	init_LCD();
 	int counter = 0;
-	while(counter < 500) {counter ++;}
+	while(counter < 5000) {counter ++;}
 
 
 	//drawImage();
 	while(1){
 		//fillRed();
+		PERF_START_MEASURING(PERFORMANCE_COUNTER_0_BASE);
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, 1);
 		drawImage();
+		PERF_END(PERFORMANCE_COUNTER_0_BASE, 1);
 		counter = 0;
 		while(counter < 50000000){counter++;}
 
+		PERF_BEGIN(PERFORMANCE_COUNTER_0_BASE, 2);
+		dmaDone = 0;
 		useDMA();
+		while(dmaDone == 0);
+		PERF_STOP_MEASURING(PERFORMANCE_COUNTER_0_BASE);
+		perf_print_formatted_report(PERFORMANCE_COUNTER_0_BASE, alt_get_cpu_freq(), 2, "Manual", "DMA");
 		counter = 0;
 		while(counter < 50000000){counter++;}
 	}
