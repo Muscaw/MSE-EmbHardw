@@ -1,2 +1,7 @@
 *
 !test_led/
+test_dma_bsp
+*.d
+*.o
+*.map
+*.objdump

@@ -65,6 +65,7 @@ BEGIN
 			DCXSig <= '0';
 			DMAMode <= '0';
 			MasterReadSignal <= '0';
+			end_of_transaction_irq <= '0';
 			FetchAddressSig <= "00000000000000000000000000000000";
 			Size <= "00000000000000000000000000000000";
 			IsMasterWaitRequestUp <= '0';
@@ -76,7 +77,6 @@ BEGIN
         ELSIF rising_edge(Clk) THEN
             CASE state IS
                 WHEN Idle => 
-					end_of_transaction_irq <= '0';
                     IF avalon_wr = '1' AND avalon_cs = '1' THEN
 						CASE avalon_address IS
 							WHEN "000" => -- Write command to LCD
@@ -103,6 +103,10 @@ BEGIN
 								MasterReadSignal <= '1';
 								StartedSetup <= '1';
 								state <= dS0;
+							WHEN "101" => -- DMA controller
+								IF avalon_write_data(0) = '1' THEN
+									end_of_transaction_irq <= '0';
+								END IF;
 							WHEN others => NULL;
 						END CASE;
 					ELSIF avalon_rd = '1' AND avalon_cs = '1' THEN
@@ -115,6 +119,8 @@ BEGIN
 						END CASE;
                     END IF;
 				WHEN IdleNW =>
+					LEDS(31) <= '0';
+					LEDS(20) <= '0';
 					state <= Idle;
                 WHEN s1 =>
                     state <= s2;
@@ -137,12 +143,10 @@ BEGIN
 					IsGoneThroughS3 <= '0';
 				WHEN dS1 =>
 					DataSig <= master_readdata;
-					MasterReadSignal <= '0';
+					--state <= dS2;
 					IF master_waitrequest = '0' THEN
+						MasterReadSignal <= '0';
 						state <= dS2;
-						LEDS(7) <= '0';
-					ELSE
-						LEDS(7) <= '1';
 					END IF;
 				WHEN dS2 =>
 					WRXSig <= '0';
@@ -168,26 +172,33 @@ BEGIN
 					END IF;
             END CASE;
 				
-			IF master_waitrequest = '0' THEN
-				IsMasterWaitRequestUp <= '1';
-			END IF;
         END IF;
 		  
+		IF master_waitrequest = '0' THEN
+			LEDS(31) <= '1';
+		END IF;
+
     END PROCESS pStateMachine;
-	
+
 
     WaitRequestSlave <= '0' WHEN state = s3 OR state = IdleNW
         ELSE '1';
 	 
 	 -- LEDS <= FetchAddressSig;
-	 LEDS(0) <= master_waitrequest;
-	 LEDS(1) <= IsMasterWaitRequestUp;
-	 LEDS(2) <= '0' WHEN state = s3 OR state = IdleNW
-        ELSE '1';
-	LEDS(3) <= IsGoneThroughS3;
-	LEDS(4) <= AddressSetup;
-	LEDS(5) <= SizeSetup;
-	LEDS(6) <= StartedSetup;
+	LEDS(0) <= '1' WHEN state = Idle ELSE '0';
+	LEDS(1) <= '1' WHEN state = IdleNW ELSE '0';
+	LEDS(2) <= '1' WHEN state = s1 ELSE '0';
+	LEDS(3) <= '1' WHEN state = s2 ELSE '0';
+	LEDS(4) <= '1' WHEN state = s3 ELSE '0';
+	LEDS(5) <= '1' WHEN state = dS0 ELSE '0';
+	LEDS(6) <= '1' WHEN state = dS1 ELSE '0';
+	LEDS(7) <= '1' WHEN state = dS2 ELSE '0';
+	LEDS(8) <= '1' WHEN state = dS3 ELSE '0';
+	LEDS(9) <= '1' WHEN state = dS4 ELSE '0';
+	LEDS(10) <= '1' WHEN DMAMode = '1' ELSE '0';
+
+	LEDS(30) <= '1' WHEN master_waitrequest = '1' ELSE '0';
+
 	LCD_data <= DataSig;
 	LCD_WR_n <= WRXSig;
 	RDX <= RDXSig;

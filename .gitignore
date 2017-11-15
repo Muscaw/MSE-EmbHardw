@@ -12,11 +12,11 @@ sopc/
 .qsys_edit
 
 
-**/*.d
-**/*.o
-**/*.elf
-**/*.map
-**/*.objdump
+*.d
+*.o
+*.elf
+*.map
+*.objdump
 output_files/
 output_files_save/
 serv_req_info.txt

@@ -144,6 +144,7 @@ ELF := test_dma.elf
 # Paths to C, C++, and assembly source files.
 C_SRCS += hello_world.c
 C_SRCS += Image.c
+C_SRCS += Mountain.c
 CXX_SRCS :=
 ASM_SRCS :=
 
